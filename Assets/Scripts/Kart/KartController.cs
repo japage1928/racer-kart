@@ -44,7 +44,7 @@ public class KartController : MonoBehaviour
     private Vector2 _innerRadii;
     private Vector2 _outerRadii;
 
-    public float CurrentSpeed => Vector3.Dot(_rb.velocity, transform.forward);
+    public float CurrentSpeed => Vector3.Dot(_rb.linearVelocity, transform.forward);
 
     private void Awake()
     {
@@ -99,7 +99,7 @@ public class KartController : MonoBehaviour
     public void ApplyPadBoost(float duration, float bonusSpeed)
     {
         _boostTimer = Mathf.Max(_boostTimer, duration);
-        _rb.velocity += transform.forward * bonusSpeed;
+        _rb.linearVelocity += transform.forward * bonusSpeed;
         if (boostTrail != null)
         {
             boostTrail.emitting = true;
@@ -108,7 +108,7 @@ public class KartController : MonoBehaviour
 
     public void ResetKartPhysics()
     {
-        _rb.velocity = Vector3.zero;
+        _rb.linearVelocity = Vector3.zero;
         _rb.angularVelocity = Vector3.zero;
         _boostTimer = 0f;
         _driftCharge = 0f;
@@ -126,7 +126,7 @@ public class KartController : MonoBehaviour
 
     private void HandleMovement(float throttle, float steering, bool handbrake, bool onOffRoad)
     {
-        var velocity = _rb.velocity;
+        var velocity = _rb.linearVelocity;
         var localVelocity = transform.InverseTransformDirection(velocity);
         var absForward = Mathf.Abs(localVelocity.z);
 
@@ -160,7 +160,7 @@ public class KartController : MonoBehaviour
         var braking = handbrake ? 1.5f : Mathf.Clamp01(-throttle);
         if (braking > 0f)
         {
-            _rb.AddForce(-_rb.velocity * (brakeForce * braking * 0.04f), ForceMode.Acceleration);
+            _rb.AddForce(-_rb.linearVelocity * (brakeForce * braking * 0.04f), ForceMode.Acceleration);
         }
 
         var speedForSteer = Mathf.Clamp01(absForward / currentMaxSpeed);
@@ -177,7 +177,7 @@ public class KartController : MonoBehaviour
         localVelocity.x = Mathf.Lerp(localVelocity.x, 0f, grip * Time.fixedDeltaTime);
 
         var clampedForward = Mathf.Clamp(localVelocity.z, -reverseSpeed, currentMaxSpeed);
-        _rb.velocity = transform.TransformDirection(new Vector3(localVelocity.x, _rb.velocity.y, clampedForward));
+        _rb.linearVelocity = transform.TransformDirection(new Vector3(localVelocity.x, _rb.linearVelocity.y, clampedForward));
     }
 
     private void HandleDriftState(bool driftHeld)
@@ -185,7 +185,7 @@ public class KartController : MonoBehaviour
         if (driftHeld)
         {
             _drifting = true;
-            var flatVelocity = _rb.velocity;
+            var flatVelocity = _rb.linearVelocity;
             flatVelocity.y = 0f;
             if (flatVelocity.sqrMagnitude > 1f)
             {
@@ -256,9 +256,9 @@ public class KartController : MonoBehaviour
         }
 
         var normal = collision.contacts[0].normal;
-        var reflected = Vector3.Reflect(_rb.velocity, normal) * wallSpeedLoss;
-        reflected.y = _rb.velocity.y;
-        _rb.velocity = reflected;
+        var reflected = Vector3.Reflect(_rb.linearVelocity, normal) * wallSpeedLoss;
+        reflected.y = _rb.linearVelocity.y;
+        _rb.linearVelocity = reflected;
         _rb.AddForce(normal * reboundStrength, ForceMode.VelocityChange);
     }
 }

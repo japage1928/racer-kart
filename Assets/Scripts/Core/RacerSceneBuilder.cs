@@ -242,8 +242,8 @@ public class RacerSceneBuilder : MonoBehaviour
 
         var rb = kart.AddComponent<Rigidbody>();
         rb.mass = 1.6f;
-        rb.drag = 0.15f;
-        rb.angularDrag = 2.8f;
+        rb.linearDamping = 0.15f;
+        rb.angularDamping = 2.8f;
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
         kart.AddComponent<HybridKartInput>();
